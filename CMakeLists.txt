@@ -14,7 +14,7 @@ option(AEC_BUILD_EXAMPLES "Build examples" ON)
 # Include directories
 include_directories(include)
 
-# Library
+# Main library
 add_library(aec
     src/aec.cpp
     src/fixed_point.cpp

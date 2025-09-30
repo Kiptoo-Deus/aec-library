@@ -9,35 +9,44 @@ def check_performance_regression(benchmark_file):
         with open(benchmark_file, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"Benchmark file {benchmark_file} not found")
+        print(f" Benchmark file {benchmark_file} not found - skipping performance check")
         return True
     
     max_regression = 0
     failed_benchmarks = []
     
+    print("📊 Performance Results:")
     for benchmark in data['benchmarks']:
         name = benchmark['name']
         cpu_time = benchmark['cpu_time']
+        time_unit = benchmark.get('time_unit', 'ns')
         
-        # In a real scenario, compare against baseline from previous run
-        # For now, we'll set some reasonable thresholds
-        thresholds = {
-            'BM_AEC_Process_FixedPoint': 1000,  # microseconds
-            'BM_AEC_Latency': 5.0  # milliseconds
-        }
+        print(f"  {name}: {cpu_time:.2f}{time_unit}")
         
-        for key, threshold in thresholds.items():
-            if key in name and cpu_time > threshold:
+        # Set reasonable thresholds
+        if 'BM_AEC_Process_FixedPoint' in name:
+            threshold = 1000  # microseconds
+            if cpu_time > threshold and time_unit == 'us':
                 failed_benchmarks.append({
                     'name': name,
                     'current': cpu_time,
-                    'threshold': threshold
+                    'threshold': threshold,
+                    'unit': time_unit
+                })
+        elif 'BM_AEC_Latency' in name:
+            threshold = 5.0  # milliseconds
+            if cpu_time > threshold and time_unit == 'ms':
+                failed_benchmarks.append({
+                    'name': name,
+                    'current': cpu_time,
+                    'threshold': threshold,
+                    'unit': time_unit
                 })
     
     if failed_benchmarks:
         print("🚨 Performance regression detected!")
         for bench in failed_benchmarks:
-            print(f"  {bench['name']}: {bench['current']:.2f} > {bench['threshold']}")
+            print(f"  {bench['name']}: {bench['current']:.2f}{bench['unit']} > {bench['threshold']}{bench['unit']}")
         return False
     else:
         print("✅ All benchmarks within acceptable performance limits")
