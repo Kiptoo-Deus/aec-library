@@ -1,0 +1,35 @@
+# Build directories
+build/
+install/
+*.so
+*.a
+*.lib
+*.dll
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.wav
+*.raw
+
+# Coverage reports
+coverage/
+*.gcda
+*.gcno
+*.gcov
+
+# Benchmark results
+benchmark_results.json
+perf.data*
+
+# Documentation
+docs/html/
+docs/latex/

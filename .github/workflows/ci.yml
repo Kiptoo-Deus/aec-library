@@ -1,0 +1,52 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build
+        sudo apt-get install -y libgtest-dev libbenchmark-dev
+    
+    - name: Configure CMake
+      run: |
+        cmake -B ${{github.workspace}}/build \
+              -DCMAKE_BUILD_TYPE=${{matrix.build-type}} \
+              -DAEC_BUILD_TESTS=ON \
+              -DAEC_BUILD_BENCHMARKS=ON \
+              -DAEC_BUILD_EXAMPLES=ON
+    
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --parallel
+    
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      run: ctest --output-on-failure
+    
+    - name: Run benchmarks
+      working-directory: ${{github.workspace}}/build
+      run: |
+        ./benchmarks/aec_benchmark --benchmark_format=json > benchmark_results.json
+    
+    - name: Check performance
+      run: |
+        python3 scripts/check_performance.py benchmark_results.json
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Clang-tidy check
+      run: |
+        sudo apt-get install -y clang-tidy
+        find src include -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy
