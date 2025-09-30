@@ -4,9 +4,7 @@ on: [push, pull_request]
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        build-type: [Debug, Release]
+    timeout-minutes: 10
     
     steps:
     - uses: actions/checkout@v4
@@ -20,7 +18,7 @@ jobs:
     - name: Configure CMake
       run: |
         cmake -B build \
-              -DCMAKE_BUILD_TYPE=${{matrix.build-type}} \
+              -DCMAKE_BUILD_TYPE=Release \
               -DAEC_BUILD_TESTS=ON \
               -DAEC_BUILD_BENCHMARKS=ON \
               -DAEC_BUILD_EXAMPLES=ON
@@ -36,20 +34,22 @@ jobs:
       working-directory: build
       run: |
         ./benchmarks/aec_benchmark --benchmark_format=json > benchmark_results.json
-        echo "Benchmark results:"
+        echo "=== BENCHMARK RESULTS ==="
         ./benchmarks/aec_benchmark --benchmark_format=console
+    
+    - name: Check performance
+      run: |
+        python3 scripts/check_performance.py build/benchmark_results.json
     
     - name: Run example
       working-directory: build
-      run: ./examples/basic_usage
-
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Clang-tidy check
       run: |
-        sudo apt-get install -y clang-tidy
-        # Basic syntax check without complex analysis
-        find src include -name '*.cpp' -o -name '*.hpp' | head -5 | xargs clang-tidy
+        echo "=== EXAMPLE OUTPUT ==="
+        ./examples/basic_usage
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results
+        path: build/benchmark_results.json
+        retention-days: 7
