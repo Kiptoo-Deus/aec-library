@@ -12,7 +12,7 @@ def check_performance_regression(benchmark_file):
         print(f"Benchmark file {benchmark_file} not found - skipping performance check")
         return True
     
-    print("📊 Performance Results Analysis:")
+    print(" Performance Results Analysis:")
     all_within_limits = True
     
     for benchmark in data['benchmarks']:
