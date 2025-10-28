@@ -31,7 +31,7 @@ def generate_test_signals():
     wavfile.write('test_far_end.wav', sample_rate, far_end_int16)
     wavfile.write('test_near_end.wav', sample_rate, near_end_int16)
     
-    print("✅ Generated test audio files:")
+    print(" Generated test audio files:")
     print("   - test_far_end.wav (clean signal)")
     print("   - test_near_end.wav (signal with echo + noise)")
 
