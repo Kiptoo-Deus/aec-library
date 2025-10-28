@@ -9,7 +9,7 @@ def check_performance_regression(benchmark_file):
         with open(benchmark_file, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"⚠️ Benchmark file {benchmark_file} not found - skipping performance check")
+        print(f"Benchmark file {benchmark_file} not found - skipping performance check")
         return True
     
     print("📊 Performance Results Analysis:")
@@ -41,26 +41,26 @@ def check_performance_regression(benchmark_file):
                 threshold = 5000  # default
             
             if cpu_time > threshold and time_unit == 'us':
-                print(f"🚨 {name}: {cpu_time:.2f}{time_unit} > {threshold}{time_unit}")
+                print(f"{name}: {cpu_time:.2f}{time_unit} > {threshold}{time_unit}")
                 all_within_limits = False
             else:
-                print(f"✅ {name}: {cpu_time:.2f}{time_unit} <= {threshold}{time_unit}")
+                print(f"{name}: {cpu_time:.2f}{time_unit} <= {threshold}{time_unit}")
                 
         elif 'BM_AEC_Latency' in name:
             threshold = 5.0  # milliseconds
             if cpu_time > threshold and time_unit == 'ms':
-                print(f"🚨 {name}: {cpu_time:.2f}{time_unit} > {threshold}{time_unit}")
+                print(f" {name}: {cpu_time:.2f}{time_unit} > {threshold}{time_unit}")
                 all_within_limits = False
             else:
-                print(f"✅ {name}: {cpu_time:.2f}{time_unit} <= {threshold}{time_unit}")
+                print(f"{name}: {cpu_time:.2f}{time_unit} <= {threshold}{time_unit}")
         else:
-            print(f"📝 {name}: {cpu_time:.2f}{time_unit}")
+            print(f"{name}: {cpu_time:.2f}{time_unit}")
     
     if all_within_limits:
-        print("🎉 All benchmarks within acceptable performance limits!")
+        print("All benchmarks within acceptable performance limits!")
         return True
     else:
-        print("❌ Performance regression detected!")
+        print("Performance regression detected!")
         return False
 
 if __name__ == "__main__":
