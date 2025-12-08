@@ -16,35 +16,63 @@ A high-performance, real-time Acoustic Echo Cancellation library written in C++ 
 - **Echo Reduction**: >25dB ERLE (Echo Return Loss Enhancement)
 - **CPU Usage**: Optimized fixed-point arithmetic for embedded systems
 
+git clone 
+
 ## 🛠 Quick Start
 
 ### Prerequisites
 
+- CMake >= 3.15
+- Conan (dependency manager)
+- Ninja (optional, for faster builds)
+- Android NDK (for Android builds)
+
+#### Install Tools
 ```bash
 # Ubuntu/Debian
-sudo apt-get install build-essential cmake ninja-build
+sudo apt-get install build-essential cmake ninja
+pip install conan
 
 # macOS
 brew install cmake ninja
+pip3 install conan
 
 # Windows (vcpkg)
 vcpkg install cmake ninja gtest benchmark
+pip install conan
+```
 
-git clone 
+### Clone and Build (Desktop)
+```bash
+git clone https://github.com/Kiptoo-Deus/aec-library.git
 cd aec-library
-
-# Configure and build
+conan install . --build=missing
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
+```
 
-# Run tests
+### Run Tests, Benchmarks, Example
+```bash
 cd build && ctest --output-on-failure
-
-# Run benchmarks
 ./benchmarks/aec_benchmark
-
-# Run example
 ./examples/basic_usage
+```
+
+### Build for Android
+```bash
+# Set your NDK path and ABI (e.g. arm64-v8a, armeabi-v7a, x86_64)
+export ANDROID_NDK_HOME=/path/to/ndk
+cmake -B build-android-arm64 \
+    -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+    -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21
+cmake --build build-android-arm64 --parallel
+# Repeat for other ABIs
+```
+
+#### JNI Integration (Android)
+- Copy the produced `.so` files from `build-android-*` to your Android project's `app/src/main/jniLibs/<ABI>/`.
+- Use the provided `AecWrapper.java` in your Android app.
+- Load the library in Java: `System.loadLibrary("aec");`
 
 
 
