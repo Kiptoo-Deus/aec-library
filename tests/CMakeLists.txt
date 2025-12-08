@@ -1,5 +1,4 @@
 # Tests CMakeLists.txt
-find_package(GTest REQUIRED)
 
 add_executable(aec_tests
     test_aec.cpp

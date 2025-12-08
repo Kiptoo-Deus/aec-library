@@ -5,6 +5,17 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Include Conan dependencies if present
+if(EXISTS "${CMAKE_BINARY_DIR}/cmakedeps_macros.cmake")
+    include("${CMAKE_BINARY_DIR}/cmakedeps_macros.cmake")
+endif()
+if(EXISTS "${CMAKE_BINARY_DIR}/GTestConfig.cmake")
+    include("${CMAKE_BINARY_DIR}/GTestConfig.cmake")
+endif()
+if(EXISTS "${CMAKE_BINARY_DIR}/benchmark-config.cmake")
+    include("${CMAKE_BINARY_DIR}/benchmark-config.cmake")
+endif()
+
 # Build options
 option(AEC_BUILD_TESTS "Build tests" ON)
 option(AEC_BUILD_BENCHMARKS "Build benchmarks" ON)

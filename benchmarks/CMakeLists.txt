@@ -1,5 +1,4 @@
 # Benchmarks CMakeLists.txt
-find_package(benchmark REQUIRED)
 
 add_executable(aec_benchmark
     aec_benchmark.cpp
