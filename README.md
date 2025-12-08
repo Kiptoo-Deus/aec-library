@@ -2,7 +2,7 @@
 
 A high-performance, real-time Acoustic Echo Cancellation library written in C++ for VoIP and teleconferencing applications.
 
-## 🚀 Features
+##  Features
 
 - **Real-time Processing**: <5ms latency for VoIP scenarios
 - **Adaptive Filtering**: NLMS algorithm with fixed-point optimization
@@ -10,7 +10,7 @@ A high-performance, real-time Acoustic Echo Cancellation library written in C++ 
 - **Cross-platform**: Linux, macOS, Windows support
 - **Modern C++**: C++11 with RAII and Pimpl idiom
 
-## 📊 Performance
+##  Performance
 
 - **Latency**: <5ms end-to-end processing
 - **Echo Reduction**: >25dB ERLE (Echo Return Loss Enhancement)
@@ -59,6 +59,17 @@ cd build && ctest --output-on-failure
 ```
 
 ### Build for Android
+# Build for iOS
+```bash
+# Configure for iOS (arm64)
+cmake -B build-ios \
+    -DCMAKE_SYSTEM_NAME=iOS \
+    -DCMAKE_OSX_ARCHITECTURES=arm64 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+    -DAEC_SRC="src/aec.cpp;src/fixed_point.cpp;src/nlms_filter.cpp"
+cmake --build build-ios --parallel
+# The output will be aec.framework (for iOS integration)
+```
 ```bash
 # Set your NDK path and ABI (e.g. arm64-v8a, armeabi-v7a, x86_64)
 export ANDROID_NDK_HOME=/path/to/ndk

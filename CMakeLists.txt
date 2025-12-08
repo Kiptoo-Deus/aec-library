@@ -1,5 +1,4 @@
 
-
 cmake_minimum_required(VERSION 3.15)
 project(aec-library LANGUAGES CXX)
 
@@ -7,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(aec SHARED
+set(AEC_SRC
     src/aec.cpp
     src/fixed_point.cpp
     src/nlms_filter.cpp
@@ -18,8 +17,16 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
 )
 
-# Android ABI detection
-if(ANDROID)
+if(IOS)
+    message(STATUS "Building for iOS")
+    add_library(aec SHARED ${AEC_SRC})
+    set_target_properties(aec PROPERTIES
+        OUTPUT_NAME "aec"
+        FRAMEWORK TRUE
+        PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/aec/aec.hpp"
+    )
+    target_include_directories(aec PRIVATE ${CMAKE_SOURCE_DIR}/include)
+elseif(ANDROID)
     message(STATUS "Building for Android")
     add_library(aec SHARED ${AEC_SRC})
     set_target_properties(aec PROPERTIES
@@ -28,7 +35,6 @@ if(ANDROID)
     )
     target_include_directories(aec PRIVATE ${CMAKE_SOURCE_DIR}/include)
 else()
-    # Desktop build
     add_library(aec STATIC ${AEC_SRC})
     set_target_properties(aec PROPERTIES
         OUTPUT_NAME "aec"
