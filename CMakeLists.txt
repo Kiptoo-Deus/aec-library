@@ -1,61 +1,57 @@
-cmake_minimum_required(VERSION 3.15)
-project(AEC VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+
+cmake_minimum_required(VERSION 3.15)
+project(aec-library LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Include Conan dependencies if present
-if(EXISTS "${CMAKE_BINARY_DIR}/cmakedeps_macros.cmake")
-    include("${CMAKE_BINARY_DIR}/cmakedeps_macros.cmake")
-endif()
-if(EXISTS "${CMAKE_BINARY_DIR}/GTestConfig.cmake")
-    include("${CMAKE_BINARY_DIR}/GTestConfig.cmake")
-endif()
-if(EXISTS "${CMAKE_BINARY_DIR}/benchmark-config.cmake")
-    include("${CMAKE_BINARY_DIR}/benchmark-config.cmake")
-endif()
-
-# Build options
-option(AEC_BUILD_TESTS "Build tests" ON)
-option(AEC_BUILD_BENCHMARKS "Build benchmarks" ON)
-option(AEC_BUILD_EXAMPLES "Build examples" ON)
-
-# Include directories
-include_directories(include)
-
-# Main library
-add_library(aec
+add_library(aec SHARED
     src/aec.cpp
     src/fixed_point.cpp
     src/nlms_filter.cpp
+    src/aec_jni.cpp
 )
 
-target_include_directories(aec PUBLIC include)
+include_directories(
+    ${CMAKE_SOURCE_DIR}/include
+)
 
-# Tests
-if(AEC_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+# Android ABI detection
+if(ANDROID)
+    message(STATUS "Building for Android")
+    add_library(aec SHARED ${AEC_SRC})
+    set_target_properties(aec PROPERTIES
+        OUTPUT_NAME "aec"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+    target_include_directories(aec PRIVATE ${CMAKE_SOURCE_DIR}/include)
+else()
+    # Desktop build
+    add_library(aec STATIC ${AEC_SRC})
+    set_target_properties(aec PROPERTIES
+        OUTPUT_NAME "aec"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+    target_include_directories(aec PRIVATE ${CMAKE_SOURCE_DIR}/include)
 endif()
 
-# Benchmarks
-if(AEC_BUILD_BENCHMARKS)
-    add_subdirectory(benchmarks)
+# Link dependencies (if any from Conan)
+if(TARGET CONAN_PKG::gtest)
+    target_link_libraries(aec PRIVATE CONAN_PKG::gtest)
 endif()
 
 # Examples
-if(AEC_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+add_executable(aec_example examples/basic_usage.cpp)
+target_link_libraries(aec_example PRIVATE aec)
 
-# Installation
-install(TARGETS aec
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
+# Benchmarks
+add_executable(aec_benchmark benchmarks/aec_benchmark.cpp)
+target_link_libraries(aec_benchmark PRIVATE aec)
 
-install(DIRECTORY include/aec
-    DESTINATION include
-)
+# Tests
+enable_testing()
+add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp)
+target_link_libraries(aec_test PRIVATE aec)
+add_test(NAME aec_test COMMAND aec_test)
