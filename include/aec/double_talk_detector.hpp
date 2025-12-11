@@ -13,8 +13,11 @@ public:
 
     void reset();
 
-    // Update with a single frame of raw int16 samples. Returns true when adaptation is allowed.
-    bool update(const int16_t* far, const int16_t* near, uint32_t frame_size);
+    // Update with a single frame of raw int16 samples. `stride` indicates the
+    // spacing between consecutive samples for this channel in the buffer
+    // (useful for interleaved multi-channel buffers). Returns true when
+    // adaptation is allowed.
+    bool update(const int16_t* far, const int16_t* near, uint32_t frame_size, uint32_t stride = 1);
 
     bool is_adapt_allowed() const { return adapt_allowed; }
 

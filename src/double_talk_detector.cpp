@@ -22,14 +22,14 @@ void DoubleTalkDetector::reset() {
     adapt_allowed = true;
 }
 
-bool DoubleTalkDetector::update(const int16_t* far, const int16_t* near, uint32_t frame_size) {
-    // Compute instantaneous powers and cross-power for the frame
+bool DoubleTalkDetector::update(const int16_t* far, const int16_t* near, uint32_t frame_size, uint32_t stride) {
+    // Compute instantaneous powers and cross-power for the frame using strided access
     double far_pow = 0.0;
     double near_pow = 0.0;
     double cross = 0.0;
     for (uint32_t i = 0; i < frame_size; ++i) {
-        double f = static_cast<double>(far[i]) / 32768.0;
-        double n = static_cast<double>(near[i]) / 32768.0;
+        double f = static_cast<double>(far[i * stride]) / 32768.0;
+        double n = static_cast<double>(near[i * stride]) / 32768.0;
         far_pow += f * f;
         near_pow += n * n;
         cross += f * n;
