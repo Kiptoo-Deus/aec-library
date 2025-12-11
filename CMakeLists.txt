@@ -85,7 +85,7 @@ if (ENABLE_UNIT_TESTS)
 
     if (GTest_FOUND)
         enable_testing()
-        add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp)
+            add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp tests/test_multichannel.cpp)
         target_link_libraries(aec_test PRIVATE aec GTest::gtest_main)
         include(GoogleTest)
         gtest_discover_tests(aec_test)
