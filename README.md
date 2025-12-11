@@ -7,6 +7,7 @@ A high-performance, real-time Acoustic Echo Cancellation library written in C++ 
 - **Real-time Processing**: <5ms latency for VoIP scenarios
 - **Adaptive Filtering**: NLMS algorithm with fixed-point optimization
 - **Double-talk Detection**: Robust, coherence- and energy-based detector to freeze adaptation during near-end speech (configurable thresholds and hangover)
+- **Multi-channel Support**: Process interleaved input with up to **8** channels (configurable via `AECConfig::channels`). Per-channel NLMS filters and per-channel DTDs are used.
 - **Production Ready**: Comprehensive tests, benchmarks, and CI/CD
 - **Cross-platform**: Linux, macOS, Windows support
 - **Modern C++**: C++11 with RAII and Pimpl idiom
