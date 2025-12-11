@@ -6,6 +6,7 @@ A high-performance, real-time Acoustic Echo Cancellation library written in C++ 
 
 - **Real-time Processing**: <5ms latency for VoIP scenarios
 - **Adaptive Filtering**: NLMS algorithm with fixed-point optimization
+- **Double-talk Detection**: Robust, coherence- and energy-based detector to freeze adaptation during near-end speech (configurable thresholds and hangover)
 - **Production Ready**: Comprehensive tests, benchmarks, and CI/CD
 - **Cross-platform**: Linux, macOS, Windows support
 - **Modern C++**: C++11 with RAII and Pimpl idiom
@@ -137,6 +138,18 @@ reset(): Reset filter state
 get_latency_ms(): Get current processing latency
 
 get_erle(): Get echo cancellation performance
+
+## Double-talk Detection (DTD)
+
+The library includes a configurable double-talk detector enabled by default. Configure behavior via `AECConfig` fields:
+
+- `enable_double_talk_detection` (bool)
+- `dtd_near_to_far_threshold` (float)
+- `dtd_coherence_threshold` (float)
+- `dtd_smoothing_alpha` (float)
+- `dtd_hangover_frames` (uint32_t)
+
+The detector uses smoothed near/far energies and a coherence estimate to decide whether to freeze adaptation when near-end speech is present.
 
 
 ## Acknowledgments
