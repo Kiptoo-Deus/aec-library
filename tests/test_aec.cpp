@@ -10,6 +10,7 @@ protected:
         config.frame_size = 256;
         config.filter_length = 512;
         config.use_fixed_point = true;
+        config.enable_double_talk_detection = false; // disable DTD for basic functional tests
     }
     
     aec::AECConfig config;
@@ -22,14 +23,16 @@ TEST_F(AECTest, Initialization) {
 
 TEST_F(AECTest, ProcessFrame) {
     auto aec = aec::create_aec(config);
-    
     std::vector<int16_t> far_end(config.frame_size, 1000);
     std::vector<int16_t> near_end(config.frame_size, 2000);
     std::vector<int16_t> output(config.frame_size);
-    
-    bool result = aec->process(far_end.data(), near_end.data(),
-                              output.data(), config.frame_size);
-    
+
+    // Process multiple frames to allow adaptation
+    bool result = true;
+    for (int i = 0; i < 10; ++i) {
+        result = aec->process(far_end.data(), near_end.data(), output.data(), config.frame_size);
+    }
+
     EXPECT_TRUE(result);
     EXPECT_NE(output[0], near_end[0]);
 }

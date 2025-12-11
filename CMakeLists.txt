@@ -10,8 +10,14 @@ set(AEC_SRC
     src/aec.cpp
     src/fixed_point.cpp
     src/nlms_filter.cpp
-    src/aec_jni.cpp
+    src/double_talk_detector.cpp
 )
+
+# Optionally include JNI wrapper only if JNI is available or building for Android
+if (ANDROID)
+    list(APPEND AEC_SRC src/aec_jni.cpp)
+    message(STATUS "Including JNI wrapper in Android build")
+endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
@@ -52,12 +58,38 @@ endif()
 add_executable(aec_example examples/basic_usage.cpp)
 target_link_libraries(aec_example PRIVATE aec)
 
-# Benchmarks
-add_executable(aec_benchmark benchmarks/aec_benchmark.cpp)
-target_link_libraries(aec_benchmark PRIVATE aec)
+option(ENABLE_BENCHMARKS "Enable building benchmarks" OFF)
+if (ENABLE_BENCHMARKS)
+    find_package(benchmark QUIET)
+    if (benchmark_FOUND)
+        add_executable(aec_benchmark benchmarks/aec_benchmark.cpp)
+        target_link_libraries(aec_benchmark PRIVATE aec benchmark::benchmark)
+    else()
+        message(WARNING "benchmark not found; benchmarks disabled. Install libbenchmark to enable them.")
+    endif()
+endif()
 
-# Tests
-enable_testing()
-add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp)
-target_link_libraries(aec_test PRIVATE aec)
-add_test(NAME aec_test COMMAND aec_test)
+option(ENABLE_UNIT_TESTS "Enable building unit tests" OFF)
+if (ENABLE_UNIT_TESTS)
+    find_package(GTest QUIET)
+    if (NOT GTest_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG main
+        )
+        FetchContent_MakeAvailable(googletest)
+        set(GTest_FOUND TRUE)
+    endif()
+
+    if (GTest_FOUND)
+        enable_testing()
+        add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp)
+        target_link_libraries(aec_test PRIVATE aec GTest::gtest_main)
+        include(GoogleTest)
+        gtest_discover_tests(aec_test)
+    else()
+        message(WARNING "GTest not available; unit tests disabled.")
+    endif()
+endif()

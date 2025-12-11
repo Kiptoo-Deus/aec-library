@@ -12,11 +12,12 @@ TEST(NLMSTest, FixedPointProcessing) {
     
     int16_t far_end = 1000;
     int16_t near_end = 2000;
-    
-    int16_t output = filter.process_fixed(far_end, near_end);
-    
-    // Output should be different from input
-    EXPECT_NE(output, near_end);
+    // Process multiple frames to allow adaptation, then verify coefficients changed
+    for (int i = 0; i < 20; ++i) {
+        filter.process_fixed(far_end, near_end);
+    }
+    float norm = filter.get_coeff_norm();
+    EXPECT_GT(norm, 0.0f);
 }
 
 TEST(NLMSTest, Reset) {

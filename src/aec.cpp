@@ -1,5 +1,6 @@
 #include "aec/aec.hpp"
 #include "aec/nlms_filter.hpp"
+#include "aec/double_talk_detector.hpp"
 #include <chrono>
 #include <iostream>
 
@@ -10,21 +11,31 @@ public:
     Impl(const AECConfig& config)
         : config(config),
           nlms(config.filter_length, config.mu, config.delta, config.use_fixed_point),
-          total_samples_processed(0),
+                    total_samples_processed(0),
+                    dtd(config.frame_size,
+                            config.dtd_near_to_far_threshold,
+                            config.dtd_coherence_threshold,
+                            config.dtd_smoothing_alpha,
+                            config.dtd_hangover_frames),
           total_processing_time_ns(0) {}
     
     bool process(const int16_t* far_end, const int16_t* near_end,
                  int16_t* output, uint32_t frame_size) {
         auto start_time = std::chrono::high_resolution_clock::now();
-        
+        // Decide whether adaptation should be allowed this frame using the DTD
+        bool adapt = true;
+        if (config.enable_double_talk_detection) {
+            adapt = dtd.update(far_end, near_end, frame_size);
+        }
+
         for (uint32_t i = 0; i < frame_size; ++i) {
             if (config.use_fixed_point) {
-                output[i] = nlms.process_fixed(far_end[i], near_end[i]);
+                output[i] = nlms.process_fixed(far_end[i], near_end[i], adapt);
             } else {
                 // Convert to float, process, convert back
                 float far_float = far_end[i] / 32768.0f;
                 float near_float = near_end[i] / 32768.0f;
-                float out_float = nlms.process_float(far_float, near_float);
+                float out_float = nlms.process_float(far_float, near_float, adapt);
                 output[i] = static_cast<int16_t>(out_float * 32767.0f);
             }
         }
@@ -43,6 +54,7 @@ public:
         nlms.reset();
         total_samples_processed = 0;
         total_processing_time_ns = 0;
+        dtd.reset();
     }
     
     double get_erle() const {
@@ -61,6 +73,7 @@ public:
 private:
     AECConfig config;
     NLMSFilter nlms;
+    DoubleTalkDetector dtd;
     uint64_t total_samples_processed;
     uint64_t total_processing_time_ns;
 };

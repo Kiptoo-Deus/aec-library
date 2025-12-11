@@ -25,7 +25,7 @@ public:
         x_index = 0;
     }
     
-    float process_float(float far_end, float near_end) {
+    float process_float(float far_end, float near_end, bool adapt) {
         // Update delay line
         x_float[x_index] = far_end;
         
@@ -44,10 +44,12 @@ public:
             power += x_float[i] * x_float[i];
         }
         
-        // Update filter coefficients
-        float adaptation_step = mu / power;
-        for (size_t i = 0; i < filter_length; ++i) {
-            w_float[i] += adaptation_step * e * x_float[(x_index + i) % filter_length];
+        // Update filter coefficients if adaptation is allowed
+        if (adapt) {
+            float adaptation_step = mu / power;
+            for (size_t i = 0; i < filter_length; ++i) {
+                w_float[i] += adaptation_step * e * x_float[(x_index + i) % filter_length];
+            }
         }
         
         // Update delay line index
@@ -55,8 +57,21 @@ public:
         
         return e;
     }
+
+    float get_coeff_norm() const {
+        float sum = 0.0f;
+        if (!w_float.empty()) {
+            for (auto v : w_float) sum += v * v;
+        } else {
+            for (auto v : w_fixed) {
+                float vf = static_cast<float>(v.raw()) / 32768.0f;
+                sum += vf * vf;
+            }
+        }
+        return std::sqrt(sum);
+    }
     
-    int16_t process_fixed(int16_t far_end, int16_t near_end) {
+    int16_t process_fixed(int16_t far_end, int16_t near_end, bool adapt) {
         Q15 far_end_q15 = Q15::from_raw(far_end);
         Q15 near_end_q15 = Q15::from_raw(near_end);
         
@@ -84,16 +99,17 @@ public:
             power_acc += (x_val * x_val) >> 15;
         }
         
-        // Update coefficients
+        // Update coefficients (fixed-point) if adaptation is allowed
         float power_float = static_cast<float>(power_acc) / (32768.0f * 32768.0f);
-        float adaptation_step = mu / power_float;
-        Q15 step_q15(adaptation_step);
-        
-        for (size_t i = 0; i < filter_length; ++i) {
-            Q15 x_val = x_fixed[(x_index + i) % filter_length];
-            Q15 update = x_val * e_q15;
-            Q15 scaled_update = update * step_q15;
-            w_fixed[i] = w_fixed[i] + scaled_update;
+        if (adapt) {
+            float adaptation_step = mu / power_float;
+            Q15 step_q15(adaptation_step);
+            for (size_t i = 0; i < filter_length; ++i) {
+                Q15 x_val = x_fixed[(x_index + i) % filter_length];
+                Q15 update = x_val * e_q15;
+                Q15 scaled_update = update * step_q15;
+                w_fixed[i] = w_fixed[i] + scaled_update;
+            }
         }
         
         // Update delay line index
@@ -121,16 +137,21 @@ NLMSFilter::NLMSFilter(uint32_t length, float mu, float delta, bool use_fixed_po
 
 NLMSFilter::~NLMSFilter() = default;
 
-float NLMSFilter::process_float(float far_end, float near_end) {
-    return pimpl->process_float(far_end, near_end);
+float NLMSFilter::process_float(float far_end, float near_end, bool adapt) {
+    return pimpl->process_float(far_end, near_end, adapt);
 }
 
-int16_t NLMSFilter::process_fixed(int16_t far_end, int16_t near_end) {
-    return pimpl->process_fixed(far_end, near_end);
+int16_t NLMSFilter::process_fixed(int16_t far_end, int16_t near_end, bool adapt) {
+    return pimpl->process_fixed(far_end, near_end, adapt);
 }
 
 void NLMSFilter::reset() {
     pimpl->reset();
 }
 
+float NLMSFilter::get_coeff_norm() const {
+    return pimpl->get_coeff_norm();
+}
+
 } // namespace aec
+
