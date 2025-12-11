@@ -11,9 +11,11 @@ public:
     explicit AEC(const AECConfig& config);
     ~AEC();
     
-    // Process audio frame
+    // Process audio frame. Inputs are interleaved per-channel: sample layout is
+    // [ch0_s0, ch1_s0, ..., chN_s0, ch0_s1, ...]. 'frame_size' is number of
+    // samples per channel. 'channels' defaults to 1 for backward compatibility.
     bool process(const int16_t* far_end, const int16_t* near_end,
-                 int16_t* output, uint32_t frame_size);
+                 int16_t* output, uint32_t frame_size, uint32_t channels = 1);
     
     // Reset filter state
     void reset();
