@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <vector>
+#include <complex>
 
 namespace aec {
 
@@ -9,7 +11,9 @@ public:
                        float near_to_far_threshold = 1.5f,
                        float coherence_threshold = 0.3f,
                        float smoothing_alpha = 0.9f,
-                       uint32_t hangover_frames = 3);
+                       uint32_t hangover_frames = 3,
+                       bool use_frequency = false,
+                       uint32_t freq_bins = 0);
 
     void reset();
 
@@ -32,6 +36,20 @@ private:
     uint32_t hangover_frames;
     uint32_t hangover_counter;
     bool adapt_allowed;
+    // Frequency-domain members
+    bool use_frequency;
+    uint32_t fft_size;
+    uint32_t freq_bins; // how many bins to use (up to fft_size/2)
+    std::vector<double> Sxx_sm;
+    std::vector<double> Syy_sm;
+    std::vector<std::complex<double>> Sxy_sm;
+    // Last computed metrics (for tests/monitoring)
+    double last_coherence = 1.0;
+    double last_ratio = 0.0;
+
+public:
+    double get_last_coherence() const { return last_coherence; }
+    double get_last_ratio() const { return last_ratio; }
 };
 
 } // namespace aec

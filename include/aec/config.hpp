@@ -16,6 +16,13 @@ struct AECConfig {
     float mu = 0.1f;  // Step size for NLMS
     float delta = 1e-6f;  // Regularization
     bool use_fixed_point = true;
+    // Multi-channel support
+    uint32_t channels = 1; // number of interleaved channels (1..8)
+    static constexpr uint32_t max_channels = 8;
+    // Frequency-domain DTD options
+    bool dtd_use_frequency = true; // use frequency-domain coherence by default
+    // Number of FFT bins to average for coherence (use frame_size/2 by default)
+    uint32_t dtd_freq_bins = 0; // 0 = auto (frame_size/2)
     // Double-talk detection (DTD) settings
     bool enable_double_talk_detection = true;
     float dtd_near_to_far_threshold = 1.5f; // ratio near_power / far_power > threshold -> near-dominant
