@@ -58,6 +58,11 @@ endif()
 add_executable(aec_example examples/basic_usage.cpp)
 target_link_libraries(aec_example PRIVATE aec)
 
+# Small examples
+add_executable(wav_aec examples/wav_aec.cpp)
+target_link_libraries(wav_aec PRIVATE aec)
+install(TARGETS wav_aec DESTINATION bin)
+
 option(ENABLE_BENCHMARKS "Enable building benchmarks" OFF)
 if (ENABLE_BENCHMARKS)
     find_package(benchmark QUIET)
