@@ -149,6 +149,8 @@ The library includes a configurable double-talk detector enabled by default. Con
 - `dtd_coherence_threshold` (float)
 - `dtd_smoothing_alpha` (float)
 - `dtd_hangover_frames` (uint32_t)
+- `dtd_use_frequency` (bool): enable frequency-domain DTD using smoothed PSD/CSD coherence (default: true)
+- `dtd_freq_bins` (uint32_t): how many FFT bins to use for coherence estimation (0 = auto frame_size/2)
 
 The detector uses smoothed near/far energies and a coherence estimate to decide whether to freeze adaptation when near-end speech is present.
 
