@@ -11,6 +11,7 @@ set(AEC_SRC
     src/fixed_point.cpp
     src/nlms_filter.cpp
     src/double_talk_detector.cpp
+    src/webrtc_adapter.cpp
 )
 
 # Optionally include JNI wrapper only if JNI is available or building for Android
@@ -58,6 +59,9 @@ endif()
 add_executable(aec_example examples/basic_usage.cpp)
 target_link_libraries(aec_example PRIVATE aec)
 
+add_executable(aec_webrtc_demo examples/webrtc_aec_demo.cpp)
+target_link_libraries(aec_webrtc_demo PRIVATE aec)
+
 # Small examples
 add_executable(wav_aec examples/wav_aec.cpp)
 target_link_libraries(wav_aec PRIVATE aec)
@@ -90,7 +94,7 @@ if (ENABLE_UNIT_TESTS)
 
     if (GTest_FOUND)
         enable_testing()
-            add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp tests/test_multichannel.cpp)
+            add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp tests/test_multichannel.cpp tests/test_wav_aec.cpp tests/test_webrtc_adapter.cpp)
         target_link_libraries(aec_test PRIVATE aec GTest::gtest_main)
         include(GoogleTest)
         gtest_discover_tests(aec_test)
