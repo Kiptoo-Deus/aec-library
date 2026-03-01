@@ -14,6 +14,15 @@ set(AEC_SRC
     src/webrtc_adapter.cpp
 )
 
+set(AEC_READER_SRC
+    src/error.cpp
+    src/logger.cpp
+    src/audio_spec.cpp
+    src/audio_reader.cpp
+    src/wav_reader.cpp
+    src/config_loader.cpp
+)
+
 # Optionally include JNI wrapper only if JNI is available or building for Android
 if (ANDROID)
     list(APPEND AEC_SRC src/aec_jni.cpp)
@@ -55,6 +64,15 @@ if(TARGET CONAN_PKG::gtest)
     target_link_libraries(aec PRIVATE CONAN_PKG::gtest)
 endif()
 
+# Create aec_reader library (extends aec with audio I/O and utilities)
+add_library(aec_reader STATIC ${AEC_READER_SRC})
+set_target_properties(aec_reader PROPERTIES
+    OUTPUT_NAME "aec_reader"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+target_include_directories(aec_reader PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(aec_reader PRIVATE aec)
+
 # Examples
 add_executable(aec_example examples/basic_usage.cpp)
 target_link_libraries(aec_example PRIVATE aec)
@@ -66,6 +84,10 @@ target_link_libraries(aec_webrtc_demo PRIVATE aec)
 add_executable(wav_aec examples/wav_aec.cpp)
 target_link_libraries(wav_aec PRIVATE aec)
 install(TARGETS wav_aec DESTINATION bin)
+
+add_executable(batch_processor examples/batch_processor.cpp)
+target_link_libraries(batch_processor PRIVATE aec_reader aec)
+install(TARGETS batch_processor DESTINATION bin)
 
 option(ENABLE_BENCHMARKS "Enable building benchmarks" OFF)
 if (ENABLE_BENCHMARKS)
@@ -94,7 +116,7 @@ if (ENABLE_UNIT_TESTS)
 
     if (GTest_FOUND)
         enable_testing()
-            add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp tests/test_multichannel.cpp tests/test_wav_aec.cpp tests/test_webrtc_adapter.cpp)
+        add_executable(aec_test tests/test_aec.cpp tests/test_fixed_point.cpp tests/test_nlms.cpp tests/test_double_talk.cpp tests/test_multichannel.cpp tests/test_webrtc_adapter.cpp)
         target_link_libraries(aec_test PRIVATE aec GTest::gtest_main)
         include(GoogleTest)
         gtest_discover_tests(aec_test)
